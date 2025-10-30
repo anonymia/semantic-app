@@ -1,4 +1,4 @@
-name: 'Tag Version with semantic-release'
+name: 'Release Version with semantic-release'
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies (semantic-release)
         run: npm install
 
-      - name: Run semantic-release
+      - name: Run semantic-release (release)
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx semantic-release -c .releaserc-tag.yml
+        run: npx semantic-release -c .releaserc-release.yml
