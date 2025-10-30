@@ -33,6 +33,13 @@ else
 fi
 MSGS=$(git log $RANGE --pretty=format:%s)
 
+# Detect whether the last tag is stable or RC
+if [[ "$LAST_TAG" != *-rc* ]]; then
+  LAST_TAG_IS_STABLE=1
+else
+  LAST_TAG_IS_STABLE=0
+fi
+
 BUMP_MAJOR=0
 BUMP_MINOR=0
 BUMP_PATCH=0
@@ -48,6 +55,11 @@ if [ $BUMP_MAJOR -eq 0 ] && [ $BUMP_MINOR -eq 0 ]; then
   for msg in $MSGS; do
     echo "$msg" | grep -Eowq 'fix:|\(fix\)' && BUMP_PATCH=1 && break
   done
+fi
+
+# Force PATCH bump if starting after a stable release and no keyword matched
+if [ $LAST_TAG_IS_STABLE -eq 1 ] && [ $BUMP_MAJOR -eq 0 ] && [ $BUMP_MINOR -eq 0 ] && [ $BUMP_PATCH -eq 0 ]; then
+  BUMP_PATCH=1
 fi
 
 if [ $BUMP_MAJOR -eq 1 ]; then
