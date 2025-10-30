@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  calc-tag:
+  tag:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
