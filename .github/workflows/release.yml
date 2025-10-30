@@ -26,9 +26,29 @@ jobs:
           # Remove -rcN
           CORE_VERSION="${VERSION%%-rc*}"
           BUILD_DATE=$(date +%y%m%d)
+          # Find previous stable release (non-rc) for changelog diff
+          PREV_TAG=$(git tag --list 'v*' --sort=-v:refname | grep -v -- '-rc' | head -n1)
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$CORE_VERSION" >> $GITHUB_OUTPUT
           echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+          echo "prev_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install conventional-changelog-cli
+        run: npm install -g conventional-changelog-cli
+
+      - name: Generate release notes
+        id: changelog
+        run: |
+          if [[ -z "${{ steps.get_tag.outputs.prev_tag }}" ]]; then
+            conventional-changelog -p angular -r 1 > release-notes.md
+          else
+            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_tag }} --to ${{ steps.get_tag.outputs.tag }} > release-notes.md
+          fi
 
       - name: Build binary
         run: |
@@ -46,6 +66,7 @@ jobs:
           name: Release ${{ steps.get_tag.outputs.version }}
           draft: false
           prerelease: false
+          body_path: release-notes.md
           files: semantic-app-${{ steps.get_tag.outputs.version }}-${{ steps.get_tag.outputs.build_date }}.tar.gz
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
