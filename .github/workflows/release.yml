@@ -46,12 +46,6 @@ jobs:
           name: Release ${{ steps.get_tag.outputs.version }}
           draft: false
           prerelease: false
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Update binary as release asset
-        uses: softprops/action-gh-release@v2
-        with:
           files: semantic-app-${{ steps.get_tag.outputs.version }}-${{ steps.get_tag.outputs.build_date }}.tar.gz
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
