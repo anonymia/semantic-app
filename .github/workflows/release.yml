@@ -74,7 +74,7 @@ jobs:
             echo "No previous release found, generating notes for entire history"
             conventional-changelog -p angular > release-notes.md
           else
-            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_release }} --to HEAD > release-notes.md
+            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_release }} --to v${{ steps.get_tag.outputs.version }} > release-notes.md
           fi
 
       - name: Create GitHub release
