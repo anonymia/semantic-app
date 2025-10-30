@@ -8,5 +8,4 @@ plugins:
   - '@semantic-release/release-notes-generator'
   - '@semantic-release/changelog'
   - '@semantic-release/github'
-  - '@semantic-release/git'
   - '@semantic-release/exec'   # For custom scripts if needed
