@@ -27,11 +27,11 @@ jobs:
           CORE_VERSION="${VERSION%%-rc*}"
           BUILD_DATE=$(date +%y%m%d)
           # Find previous stable release (non-rc) for changelog diff
-          PREV_TAG=$(git tag --list 'v*' --sort=-v:refname | grep -v -- '-rc' | head -n1)
+          PREV_RELEASE=$(git tag --list 'v*' --sort=-v:refname | grep -v -- '-rc' | head -n1)
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$CORE_VERSION" >> $GITHUB_OUTPUT
           echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
-          echo "prev_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+          echo "prev_release=$PREV_RELEASE" >> $GITHUB_OUTPUT
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -41,15 +41,6 @@ jobs:
       - name: Install conventional-changelog-cli
         run: npm install -g conventional-changelog-cli
 
-      - name: Generate release notes
-        id: changelog
-        run: |
-          if [[ -z "${{ steps.get_tag.outputs.prev_tag }}" ]]; then
-            conventional-changelog -p angular -r 1 > release-notes.md
-          else
-            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_tag }} --to ${{ steps.get_tag.outputs.tag }} > release-notes.md
-          fi
-
       - name: Build binary
         run: |
           make build VERSION=${{ steps.get_tag.outputs.version }} BUILD_DATE=${{ steps.get_tag.outputs.build_date }}
@@ -58,11 +49,29 @@ jobs:
         run: |
           make package VERSION=${{ steps.get_tag.outputs.version }} BUILD_DATE=${{ steps.get_tag.outputs.build_date }}
 
+      - name: Create stable tag for release
+        run: |
+          # Only create if not exists
+          if ! git tag | grep -q "^v${{ steps.get_tag.outputs.version }}$"; then
+            git tag "v${{ steps.get_tag.outputs.version }}"
+            git push origin "v${{ steps.get_tag.outputs.version }}"
+          fi
+
+      - name: Generate release notes
+        id: changelog
+        run: |
+          # Use prev_release (not prev_tag) for semantic changelog range
+          if [[ -z "${{ steps.get_tag.outputs.prev_release }}" ]]; then
+            conventional-changelog -p angular > release-notes.md
+          else
+            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_release }} --to v${{ steps.get_tag.outputs.version }} > release-notes.md
+          fi
+
       - name: Create GitHub release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_tag.outputs.tag }}
+          tag_name: v${{ steps.get_tag.outputs.version }}
           name: Release ${{ steps.get_tag.outputs.version }}
           draft: false
           prerelease: false
