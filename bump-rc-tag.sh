@@ -2,14 +2,14 @@
 
 set -e
 
-# Find last tag
-LAST_TAG=$(git tag --sort=-v:refname --list 'v*-rc*' | head -n 1)
+# Find last tag (could be rc or stable)
+LAST_TAG=$(git tag --sort=-v:refname --list 'v*' | head -n 1)
 if [ -z "$LAST_TAG" ]; then
   MAJOR=0; MINOR=0; PATCH=0; RC=0
 else
-  VERSION_PART=${LAST_TAG#v}
-  VERSION_PART=${VERSION_PART%%-rc*}
-  RC=${LAST_TAG##*-rc}
+  VERSION_PART="${LAST_TAG#v}"
+  VERSION_PART="${VERSION_PART%%-rc*}"
+  RC="${LAST_TAG##*-rc}"
   MAJOR=$(echo "$VERSION_PART" | cut -d. -f1)
   MINOR=$(echo "$VERSION_PART" | cut -d. -f2)
   PATCH=$(echo "$VERSION_PART" | cut -d. -f3)
@@ -19,7 +19,7 @@ fi
 # Get latest commit hash on main
 HEAD_COMMIT=$(git rev-parse HEAD)
 
-# Is this commit already tagged? (avoid duplicate tags)
+# Is this commit already tagged?
 if git tag --points-at "$HEAD_COMMIT" | grep -q '^v[0-9]\+\.[0-9]\+\.[0-9]\+-rc[0-9]\+$'; then
   echo "Current commit already tagged. Skipping."
   exit 0
@@ -33,7 +33,7 @@ else
 fi
 MSGS=$(git log $RANGE --pretty=format:%s)
 
-# Detect whether the last tag is stable or RC
+# Determine if last tag is stable or RC
 if [[ "$LAST_TAG" != *-rc* ]]; then
   LAST_TAG_IS_STABLE=1
 else
@@ -57,7 +57,7 @@ if [ $BUMP_MAJOR -eq 0 ] && [ $BUMP_MINOR -eq 0 ]; then
   done
 fi
 
-# Force PATCH bump if starting after a stable release and no keyword matched
+# If last tag was a stable release and no keyword matched, force PATCH bump
 if [ $LAST_TAG_IS_STABLE -eq 1 ] && [ $BUMP_MAJOR -eq 0 ] && [ $BUMP_MINOR -eq 0 ] && [ $BUMP_PATCH -eq 0 ]; then
   BUMP_PATCH=1
 fi
