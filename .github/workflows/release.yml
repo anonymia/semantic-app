@@ -27,7 +27,8 @@ jobs:
           CORE_VERSION="${VERSION%%-rc*}"
           BUILD_DATE=$(date +%y%m%d)
           # Find previous stable release (non-rc) for changelog diff
-          PREV_RELEASE=$(git tag --list 'v*' --sort=-v:refname | grep -v -- '-rc' | head -n1)
+          PREV_RELEASE=$(curl -s -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .tag_name -r)
           echo "tag=$TAG" >> $GITHUB_OUTPUT
           echo "version=$CORE_VERSION" >> $GITHUB_OUTPUT
           echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
@@ -67,7 +68,7 @@ jobs:
           if [[ -z "${{ steps.get_tag.outputs.prev_release }}" ]]; then
             conventional-changelog -p angular > release-notes.md
           else
-            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_release }} --to v${{ steps.get_tag.outputs.version }} > release-notes.md
+            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_release }} --to HEAD > release-notes.md
           fi
 
       - name: Create GitHub release
