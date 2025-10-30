@@ -1,13 +1,10 @@
-name: 'Release Version with semantic-release'
+name: Build & Publish Release
 
 on:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  release:
+  build-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,15 +12,43 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Get last version tag
+        id: get_tag
+        run: |
+          TAG=$(git tag --list 'v*' --sort=-v:refname | head -n1)
+          if [[ "$TAG" == "" ]]; then
+            TAG="v0.0.0-rc1"
+          fi
+          VERSION=${TAG/v/}
+          # Remove -rcN
+          CORE_VERSION="${VERSION%%-rc*}"
+          BUILD_DATE=$(date +%y%m%d)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$CORE_VERSION" >> $GITHUB_OUTPUT
+          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
+
+      - name: Build binary
+        run: |
+          make build VERSION=${{ steps.get_tag.outputs.version }} BUILD_DATE=${{ steps.get_tag.outputs.build_date }}
+
+      - name: Package binary
+        run: |
+          make package VERSION=${{ steps.get_tag.outputs.version }} BUILD_DATE=${{ steps.get_tag.outputs.build_date }}
+
+      - name: Create GitHub release
+        id: create_release
+        uses: softprops/action-gh-release@v2
         with:
-          node-version: 20
-
-      - name: Install dependencies (semantic-release)
-        run: npm install
-
-      - name: Run semantic-release (release)
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          name: Release ${{ steps.get_tag.outputs.version }}
+          draft: false
+          prerelease: false
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx semantic-release -c .releaserc-release.yml
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Update binary as release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: semantic-app-${{ steps.get_tag.outputs.version }}-${{ steps.get_tag.outputs.build_date }}.tar.gz
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
