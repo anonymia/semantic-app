@@ -28,4 +28,4 @@ jobs:
       - name: Run semantic-release (tags only)
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx semantic-release -c .releaserc-tag.yml
+        run: ./bump-rc-tag.sh
