@@ -28,9 +28,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          npx semantic-release --branches main \
-            --plugins=@semantic-release/commit-analyzer \
-            --dry-run false \
-            --no-ci \
-            --tag-format "v\${version}-rc.\${counter}" \
-            --extends ./release-rc.config.js
+          npx semantic-release --branches main --extends ./release-rc.config.js
