@@ -1,5 +1,6 @@
 name: Build & Publish Release
 
+# Triggered manually from the Actions tab
 on:
   workflow_dispatch:
 
