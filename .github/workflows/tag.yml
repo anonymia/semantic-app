@@ -22,7 +22,7 @@ jobs:
           node-version: '20'
 
       - name: Install semantic-release
-        run: npm install -g semantic-release @semantic-release/git @semantic-release/commit-analyzer
+        run: npm ci
 
       - name: Create Tag
         env:
