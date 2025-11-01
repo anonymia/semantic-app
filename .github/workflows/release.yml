@@ -23,12 +23,6 @@ jobs:
         run: |
           npm ci
 
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          npx semantic-release --branches main --extends ./release-main.config.js
-
       - name: Force update release branch to match main
         run: |
           git fetch origin
@@ -36,3 +30,9 @@ jobs:
           git pull origin main
           git branch -f release
           git push origin release --force
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          npx semantic-release --branches main --extends ./release-main.config.js
