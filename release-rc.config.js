@@ -1,5 +1,7 @@
 module.exports = {
-  branches: ['main'],
+  branches: [
+    { name: 'main', prerelease: 'rc' }
+  ],
   plugins: [
     [
       "@semantic-release/commit-analyzer",
@@ -8,11 +10,9 @@ module.exports = {
         parserOpts: {
           headerPattern: /^(\w+)(\(.+\))?!?: (.+)$/,
           headerCorrespondence: ["type", "scope", "subject"],
-          // Add this to read "type:" from the beginning of *any* line:
           noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES', 'BREAKING'],
           revertPattern: /^revert:\s([\s\S]*)$/i,
           revertCorrespondence: ["header"],
-          // This helps scan multiline
           fieldPattern: /^(\w+):\s(.+)$/gm
         },
         releaseRules: [
@@ -21,8 +21,6 @@ module.exports = {
           {type: "fix", release: "patch"}
         ],
         parserOpts: {
-          // this configuration match "type:" at the start of any line
-          // Useful for multiline PR bodies
           headerPattern: /^(\w+)(\(.+\))?!?: (.+)$/,
           headerCorrespondence: ["type", "scope", "subject"],
           referenceActions: null,
@@ -34,7 +32,7 @@ module.exports = {
     ],
     // No publish/release plugins here!
   ],
-  tagFormat: "v${version}-rc.${prerelease}",
+  tagFormat: "v${version}",
   // Don't generate release notes or changelogs, don't publish npm/github releases
   generateNotes: false,
   prepare: false,
