@@ -9,83 +9,22 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Get last version tag & previous GitHub release
-        id: get_tag
-        run: |
-          TAG=$(git tag --list 'v*' --sort=-v:refname | head -n1)
-          if [[ "$TAG" == "" ]]; then
-            TAG="v0.0.0-rc1"
-          fi
-          VERSION=${TAG/v/}
-          CORE_VERSION="${VERSION%%-rc*}"
-          BUILD_DATE=$(date +%y%m%d)
-          # Find previous GitHub stable release tag
-          PREV_RELEASE=$(curl -s -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases/latest | jq .tag_name -r)
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
-          echo "version=$CORE_VERSION" >> $GITHUB_OUTPUT
-          echo "build_date=$BUILD_DATE" >> $GITHUB_OUTPUT
-          echo "prev_release=$PREV_RELEASE" >> $GITHUB_OUTPUT
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
 
-      - name: Install conventional-changelog-cli
-        run: npm install -g conventional-changelog-cli
-
-      - name: Build binary
+      - name: Install dependencies
         run: |
-          make build VERSION=${{ steps.get_tag.outputs.version }} BUILD_DATE=${{ steps.get_tag.outputs.build_date }}
+          npm install -g semantic-release @semantic-release/git @semantic-release/github @semantic-release/commit-analyzer @semantic-release/release-notes-generator
 
-      - name: Package binary
-        run: |
-          make package VERSION=${{ steps.get_tag.outputs.version }} BUILD_DATE=${{ steps.get_tag.outputs.build_date }}
-
-      - name: Create stable tag for release
-        run: |
-          # Only create if not exists
-          if ! git tag | grep -q "^v${{ steps.get_tag.outputs.version }}$"; then
-            git tag "v${{ steps.get_tag.outputs.version }}"
-            git push origin "v${{ steps.get_tag.outputs.version }}"
-          fi
-
-      - name: Fetch all tags
-        run: git fetch --tags
-
-      # (Optional, debug step)
-      - name: Debug prev_release and tags
-        run: |
-          echo "prev_release: ${{ steps.get_tag.outputs.prev_release }}"
-          echo "current stable: v${{ steps.get_tag.outputs.version }}"
-          git tag -l
-
-      - name: Generate release notes
-        id: changelog
-        run: |
-          if [[ -z "${{ steps.get_tag.outputs.prev_release }}" ]] || [[ "${{ steps.get_tag.outputs.prev_release }}" == "null" ]]; then
-            echo "No previous release found, generating notes for entire history"
-            conventional-changelog -p angular > release-notes.md
-          else
-            conventional-changelog -p angular --from ${{ steps.get_tag.outputs.prev_release }} --to v${{ steps.get_tag.outputs.version }} > release-notes.md
-          fi
-
-      - name: Create GitHub release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.get_tag.outputs.version }}
-          name: Release ${{ steps.get_tag.outputs.version }}
-          draft: false
-          prerelease: false
-          body_path: release-notes.md
-          files: semantic-app-${{ steps.get_tag.outputs.version }}-${{ steps.get_tag.outputs.build_date }}.tar.gz
+      - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          semantic-release --branches main --extends ./release-main.config.js
