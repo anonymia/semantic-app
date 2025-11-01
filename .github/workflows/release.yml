@@ -23,6 +23,14 @@ jobs:
         run: |
           npm ci
 
+      - name: Force update release branch to match main
+        run: |
+          git fetch origin
+          git checkout main
+          git pull origin main
+          git branch -f release
+          git push origin release --force
+
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
