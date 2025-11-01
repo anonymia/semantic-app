@@ -27,4 +27,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          semantic-release --branches main --extends ./release-main.config.js
+          npx semantic-release --branches main --extends ./release-main.config.js
