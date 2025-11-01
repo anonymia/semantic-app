@@ -24,6 +24,13 @@ jobs:
       - name: Install semantic-release
         run: npm ci
 
+      - name: Ensure release branch exists
+        run: |
+          if ! git ls-remote --exit-code --heads origin release; then
+            git branch release
+            git push origin release
+          fi
+
       - name: Create Tag
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
