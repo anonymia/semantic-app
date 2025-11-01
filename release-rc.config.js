@@ -34,7 +34,7 @@ module.exports = {
     ],
     // No publish/release plugins here!
   ],
-  tagFormat: "v${version}-rc.${counter}",
+  tagFormat: "v${version}-rc.${prerelease}",
   // Don't generate release notes or changelogs, don't publish npm/github releases
   generateNotes: false,
   prepare: false,
