@@ -27,5 +27,6 @@ jobs:
       - name: Create Tag
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          DEBUG: semantic-release:*
         run: |
           npx semantic-release --extends ./release-rc.config.js

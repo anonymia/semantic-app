@@ -20,15 +20,7 @@ module.exports = {
           {type: "breaking", release: "major"},
           {type: "feat", release: "minor"},
           {type: "fix", release: "patch"}
-        ],
-        parserOpts: {
-          headerPattern: /^(\w+)(\(.+\))?!?: (.+)$/,
-          headerCorrespondence: ["type", "scope", "subject"],
-          referenceActions: null,
-          mergePattern: null,
-          mergeCorrespondence: null,
-          fieldPattern: /^(\w+):\s(.+)$/gm
-        }
+        ]
       }
     ],
     // No publish/release plugins here!
