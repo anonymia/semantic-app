@@ -28,7 +28,7 @@ module.exports = {
     [
       "@semantic-release/exec",
       {
-        prepareCmd: "make build VERSION=${nextRelease.gitTag} && make package",
+        prepareCmd: "make package VERSION=${nextRelease.version}",
       },
     ],
     [
