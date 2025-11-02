@@ -11,6 +11,8 @@ module.exports = {
         parserOpts: {
           headerPattern: /^(\w+)(\(.+\))?!?: (.+)$/,
           headerCorrespondence: ["type", "scope", "subject"],
+          mergePattern: /^(.+) #(\d+)$/,
+          mergeCorrespondence: ['id'],
           noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES', 'BREAKING'],
           revertPattern: /^revert:\s([\s\S]*)$/i,
           revertCorrespondence: ["header"],
