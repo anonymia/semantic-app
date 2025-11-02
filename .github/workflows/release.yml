@@ -19,9 +19,9 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install dependencies
+      - name: Install semantic-release
         run: |
-          npm ci
+          npm install --no-save semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/exec @semantic-release/github conventional-changelog-conventionalcommits
 
       - name: Force update release branch to match main
         run: |
