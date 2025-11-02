@@ -29,4 +29,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DEBUG: semantic-release:*
         run: |
-          npx semantic-release --extends .github/scripts/release-rc.config.js
+          npx semantic-release --extends ./.github/scripts/release-rc.config.js
