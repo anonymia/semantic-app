@@ -6,9 +6,13 @@ module.exports = {
       {
         preset: "conventionalcommits",
         parserOpts: {
-          headerPattern: /^(\w+)(\(.+\))?!?: (.+)$/,
+          headerPattern: /^\s*\*?\s*(\w+)(\(.+\))?!?: (.+)$/,
           headerCorrespondence: ["type", "scope", "subject"],
-          // parse "type:" at line start, e.g. in PR body multiline
+          mergePattern: /^.+ \(#(\d+)\)$/,
+          mergeCorrespondence: ['id'],
+          noteKeywords: ['BREAKING CHANGE', 'BREAKING CHANGES', 'BREAKING'],
+          revertPattern: /^revert:\s([\s\S]*)$/i,
+          revertCorrespondence: ["header"],
           fieldPattern: /^(\w+):\s(.+)$/gm
         },
         releaseRules: [
