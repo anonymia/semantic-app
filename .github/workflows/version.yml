@@ -36,7 +36,8 @@ jobs:
           git branch -f release
           git push origin release --force
 
-      - name: Create Release
+      - name: Create Release Notes
+        id: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DEBUG: semantic-release:*
@@ -48,9 +49,6 @@ jobs:
             echo "No new release version."
           fi
 
-      - name: Modify Release Notes
-        id: edit-notes
-        run: |
           # Extract calculated version and notes
           VERSION=$(grep -m 1 "The next release version is" semantic-release.log | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
           NOTES_START=$(grep -n "Release note for version $VERSION:" semantic-release.log | cut -d: -f1)
@@ -60,17 +58,28 @@ jobs:
           fi
 
           # Output notes (from first ## onward)
-          tail -n +$((NOTES_START+1)) semantic-release.log > RELEASE_NOTES.md
+          tail -n +$((NOTES_START+1)) semantic-release.log > release-notes.md
 
           # Replace the version in the notes with the user-input version
           USER_VERSION="${{ github.event.inputs.release_version }}"
-          sed -i "s/\[\?$VERSION\]?/[$USER_VERSION]/g" RELEASE_NOTES.md
-          sed -i "s/\($VERSION\)/$USER_VERSION/g" RELEASE_NOTES.md
-          
-          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
-          cat RELEASE_NOTES.md >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
+          sed -i "s/\[\?$VERSION\]?/[$USER_VERSION]/g" release-notes.md
+          sed -i "s/\($VERSION\)/$USER_VERSION/g" release-notes.md
 
-      - name: Output Release Notes
+          echo "version=${{ github.event.inputs.release_version }}" >> "$GITHUB_OUTPUT"
+          echo "release-notes<<EOF" >> $GITHUB_OUTPUT
+          [ -s release-notes.md ] && cat release-notes.md || echo '' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Build binary
         run: |
-          cat RELEASE_NOTES.md
+          make build VERSION=${{ steps.semantic-release.outputs.version }} && make package
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.semantic-release.outputs.version }}
+          name: ${{ steps.semantic-release.outputs.version }}
+          body: ${{ steps.semantic-release.outputs.release-notes }}
+          files: build/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

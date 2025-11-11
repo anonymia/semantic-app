@@ -31,15 +31,28 @@ jobs:
           git branch -f release
           git push origin release --force
 
-      - name: Create Release
+      - name: Create Release Notes
+        id: semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DEBUG: semantic-release:*
         run: |
           npx semantic-release --branches main --extends ./.github/scripts/release-main.config.js
-          if [ -s version.txt ]; then
-            VERSION=$(cat version.txt)
-            make build VERSION=$VERSION && make package
-          else
-            echo "No new release version."
-          fi
+          echo "version=$([ -s version.txt ] && cat version.txt || echo '')" >> "$GITHUB_OUTPUT"
+          echo "release-notes<<EOF" >> $GITHUB_OUTPUT
+          [ -s release-notes.md ] && cat release-notes.md || echo '' >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Build binary
+        run: |
+          make build VERSION=${{ steps.semantic-release.outputs.version }} && make package
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.semantic-release.outputs.version }}
+          name: ${{ steps.semantic-release.outputs.version }}
+          body: ${{ steps.semantic-release.outputs.release-notes }}
+          files: build/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

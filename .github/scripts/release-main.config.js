@@ -10,7 +10,7 @@ module.exports = {
     [
       "@semantic-release/exec",
       {
-        prepareCmd: 'echo "${nextRelease.version}" > version.txt',
+        prepareCmd: 'echo "${nextRelease.version}" > version.txt && echo "${nextRelease.notes}" > release-notes.md',
       },
     ]
   ],
