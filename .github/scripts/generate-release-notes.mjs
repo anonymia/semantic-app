@@ -46,10 +46,6 @@ try {
   process.exit(1);
 }
 
-const compareUrl = prevTag
-  ? `https://github.com/${owner}/${repo}/compare/${prevTag}...${newTag}`
-  : null;
-
 // Generate release notes with conventional-changelog-core
 let notes = "";
 const changelogStream = conventionalChangelogCore(
@@ -69,8 +65,5 @@ for await (const chunk of changelogStream) {
   notes += chunk.toString();
 }
 
-if (compareUrl) {
-  notes += `\n\n[Compare changes](${compareUrl})\n`;
-}
 fs.writeFileSync("RELEASE_NOTES.md", notes.trim(), "utf8");
 console.log("Release notes written to RELEASE_NOTES.md");
