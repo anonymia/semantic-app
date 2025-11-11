@@ -34,6 +34,7 @@ jobs:
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          DEBUG: semantic-release:*
         run: |
           npx semantic-release --branches main --extends ./.github/scripts/release-main.config.js
           if [ -s version.txt ]; then
