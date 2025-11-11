@@ -1,6 +1,5 @@
 module.exports = {
   branches: [
-    { name: 'main', prerelease: 'rc' },
     'release'
   ],
   plugins: [

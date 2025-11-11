@@ -36,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DEBUG: semantic-release:*
         run: |
-          npx semantic-release --extends ./.github/scripts/release-main.config.js
+          npx semantic-release --extends ./.github/scripts/release-main.config.js --branches release
           if [ -s version.txt ]; then
             VERSION=$(cat version.txt)
             make build VERSION=$VERSION && make package

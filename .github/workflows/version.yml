@@ -41,9 +41,36 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DEBUG: semantic-release:*
         run: |
-          npx semantic-release --extends ./.github/scripts/release-version.config.js --dry-run > semantic-release.log 2>&1 || true
+          npx semantic-release --extends ./.github/scripts/release-version.config.js --branches release --dry-run > semantic-release.log 2>&1 || true
           if [ -s semantic-release.log ]; then
             cat semantic-release.log
           else
             echo "No new release version."
           fi
+
+      - name: Modify Release Notes
+        id: edit-notes
+        run: |
+          # Extract calculated version and notes
+          VERSION=$(grep -m 1 "The next release version is" semantic-release.log | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+          NOTES_START=$(grep -n "Release note for version $VERSION:" semantic-release.log | cut -d: -f1)
+          if [ -z "$NOTES_START" ]; then
+            echo "No release notes found"
+            exit 1
+          fi
+
+          # Output notes (from first ## onward)
+          tail -n +$((NOTES_START+1)) semantic-release.log > RELEASE_NOTES.md
+
+          # Replace the version in the notes with the user-input version
+          USER_VERSION="${{ github.event.inputs.release_version }}"
+          sed -i "s/\[\?$VERSION\]?/[$USER_VERSION]/g" RELEASE_NOTES.md
+          sed -i "s/\($VERSION\)/$USER_VERSION/g" RELEASE_NOTES.md
+          
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          cat RELEASE_NOTES.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Output Release Notes
+        run: |
+          cat RELEASE_NOTES.md
