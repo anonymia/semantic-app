@@ -36,6 +36,19 @@ jobs:
           git branch -f release
           git push origin release --force
 
+          CURRENT_SHA=$(git rev-parse HEAD)
+          REMOTE_TAGS=$(git ls-remote --tags origin | grep "$CURRENT_SHA" | awk '{print $2}' | sed 's|refs/tags/||')
+
+          if [ -n "$REMOTE_TAGS" ]; then
+              echo "Current HEAD is already tagged in remote as: $REMOTE_TAGS"
+              for tag in $REMOTE_TAGS; do
+                echo "Deleting remote tag: $tag"
+                git push origin ":refs/tags/$tag"
+              done
+          else
+              echo "Current HEAD is NOT tagged in remote"
+          fi
+
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
