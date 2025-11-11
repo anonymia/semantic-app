@@ -54,7 +54,6 @@ jobs:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          npm install conventional-changelog@6
           node .github/scripts/generate-release-notes.js
 
       - name: Create Release
