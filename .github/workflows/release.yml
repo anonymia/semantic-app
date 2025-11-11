@@ -13,8 +13,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: release
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -38,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DEBUG: semantic-release:*
         run: |
-          npx semantic-release --extends ./.github/scripts/release-main.config.js
+          npx semantic-release --branches main --extends ./.github/scripts/release-main.config.js
           if [ -s version.txt ]; then
             VERSION=$(cat version.txt)
             make build VERSION=$VERSION && make package
