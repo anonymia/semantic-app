@@ -57,6 +57,6 @@ jobs:
         with:
           tag_name: v${{ steps.semantic-release.outputs.version }}
           body: ${{ steps.semantic-release.outputs.release-notes }}
-          files: build/*.tar.gz
+          files: *.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
