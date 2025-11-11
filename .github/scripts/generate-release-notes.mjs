@@ -19,10 +19,7 @@ const [owner, repo] = repoName.split("/");
 // Find latest annotated tag (previous release)
 let prevTag = "";
 try {
-  const latestTagSha = execSync("git rev-list --tags --max-count=1").toString().trim();
-  prevTag = latestTagSha
-    ? execSync(`git describe --tags ${latestTagSha}`).toString().trim()
-    : "";
+  prevTag = execSync('gh release view --json tagName -q .tagName').toString().trim();
 } catch {
   // No previous tag found, probably first release
 }
