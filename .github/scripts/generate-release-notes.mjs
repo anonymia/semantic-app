@@ -21,34 +21,33 @@ let prevTag = "";
 try {
   const latestTagSha = execSync("git rev-list --tags --max-count=1").toString().trim();
   prevTag = latestTagSha
-    ? execSync("git describe --tags ${latestTagSha}").toString().trim()
+    ? execSync(`git describe --tags ${latestTagSha}`).toString().trim()
     : "";
 } catch {
   // No previous tag found, probably first release
 }
 
-const newTag = "v${newVersion}";
+const newTag = `v${newVersion}`;
 
 // Create new tag at HEAD and overwrite remote if exists
 try {
-  // Always delete and recreate local tag
-  execSync("git tag -d ${newTag}", { stdio: "ignore" });
+  execSync(`git tag -d ${newTag}`, { stdio: "ignore" });
 } catch {}
-execSync("git tag ${newTag}");
+execSync(`git tag ${newTag}`);
 
 try {
   const remoteTags = execSync("git ls-remote --tags origin").toString();
-  if (remoteTags.includes("refs/tags/${newTag}")) {
-    execSync("git push --delete origin ${newTag}");
+  if (remoteTags.includes(`refs/tags/${newTag}`)) {
+    execSync(`git push --delete origin ${newTag}`);
   }
-  execSync("git push origin ${newTag}");
+  execSync(`git push origin ${newTag}`);
 } catch (e) {
-  console.error("Failed to push tag ${newTag}:", e);
+  console.error(`Failed to push tag ${newTag}:`, e);
   process.exit(1);
 }
 
 const compareUrl = prevTag
-  ? "https://github.com/${owner}/${repo}/compare/${prevTag}...${newTag}"
+  ? `https://github.com/${owner}/${repo}/compare/${prevTag}...${newTag}`
   : null;
 
 // Generate release notes with conventional-changelog-core
@@ -71,7 +70,7 @@ for await (const chunk of changelogStream) {
 }
 
 if (compareUrl) {
-  notes += "\n\n[Compare changes](${compareUrl})\n";
+  notes += `\n\n[Compare changes](${compareUrl})\n`;
 }
 fs.writeFileSync("RELEASE_NOTES.md", notes.trim(), "utf8");
 console.log("Release notes written to RELEASE_NOTES.md");
