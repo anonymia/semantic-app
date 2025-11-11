@@ -26,7 +26,7 @@ jobs:
 
       - name: Install conventional-changelog
         run: |
-          npm install --no-save conventional-changelog conventional-changelog-conventionalcommits
+          npm install --no-save conventional-changelog-core conventional-changelog-conventionalcommits
 
       - name: Force update release branch to match main
         run: |

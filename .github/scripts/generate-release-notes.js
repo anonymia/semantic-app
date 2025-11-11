@@ -1,6 +1,7 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
-const conventionalChangelog = require('conventional-changelog');
+const conventionalChangelogCore = require('conventional-changelog-core');
+const conventionalCommitsPreset = require('conventional-changelog-conventionalcommits');
 
 const newVersion = process.env.RELEASE_VERSION;
 if (!newVersion) {
@@ -10,7 +11,7 @@ if (!newVersion) {
 
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split('/');
 
-// Find latest tag before the new one (must be v[semver] format)
+// Find latest tag before the new one
 let prevTag = '';
 try {
   prevTag = execSync('git describe --tags --abbrev=0 HEAD^').toString().trim();
@@ -23,13 +24,13 @@ const compareUrl = prevTag
   ? `https://github.com/${owner}/${repo}/compare/${prevTag}...${newTag}`
   : null;
 
-// Generate release notes using conventional-changelog (conventionalcommits preset)
 let notes = '';
 (async () => {
-  const changelogStream = conventionalChangelog({
-    preset: 'conventionalcommits',
+  const changelogStream = conventionalChangelogCore({
     releaseCount: 1,
-    outputUnreleased: false
+    outputUnreleased: false,
+    // NOTE: Important: supply the preset here
+    config: await conventionalCommitsPreset()
   }, {
     version: newVersion,
     currentTag: newTag,
