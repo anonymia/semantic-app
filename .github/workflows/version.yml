@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: release
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -35,14 +37,13 @@ jobs:
           git pull origin main
           git branch -f release
           git push origin release --force
-          git checkout release
 
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           DEBUG: semantic-release:*
         run: |
-          npx semantic-release --extends ./.github/scripts/release-version.config.js --branches release --dry-run > semantic-release.log 2>&1 || true
+          npx semantic-release --extends ./.github/scripts/release-version.config.js --dry-run > semantic-release.log 2>&1 || true
           if [ -s semantic-release.log ]; then
             cat semantic-release.log
           else
