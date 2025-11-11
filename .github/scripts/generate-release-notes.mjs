@@ -46,6 +46,9 @@ try {
   process.exit(1);
 }
 
+console.log(`Previous tag: ${prevTag ? prevTag : ""}`);
+console.log(`New tag: ${newTag}`);
+
 // Generate release notes with conventional-changelog-core
 let notes = "";
 const changelogStream = conventionalChangelogCore(
