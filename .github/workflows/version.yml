@@ -67,7 +67,7 @@ jobs:
 
           echo "version=${{ github.event.inputs.release_version }}" >> "$GITHUB_OUTPUT"
           echo "release-notes<<EOF" >> $GITHUB_OUTPUT
-          [ -s release-notes.md ] && cat release-notes.md || echo '' >> $GITHUB_OUTPUT
+          { [ -s release-notes.md ] && cat release-notes.md || echo ''; } >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print debug

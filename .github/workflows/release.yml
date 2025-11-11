@@ -40,7 +40,7 @@ jobs:
           npx semantic-release --branches main --extends ./.github/scripts/release-main.config.js
           echo "version=$([ -s version.txt ] && cat version.txt || echo '')" >> "$GITHUB_OUTPUT"
           echo "release-notes<<EOF" >> $GITHUB_OUTPUT
-          [ -s release-notes.md ] && cat release-notes.md || echo '' >> $GITHUB_OUTPUT
+          { [ -s release-notes.md ] && cat release-notes.md || echo ''; } >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print debug
