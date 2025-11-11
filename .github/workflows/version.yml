@@ -18,17 +18,15 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install conventional-changelog
+      - name: Install semantic-release
         run: |
-          npm install --no-save conventional-changelog conventional-changelog-core conventional-changelog-conventionalcommits
+          npm install --no-save semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator conventional-changelog-conventionalcommits
 
       - name: Force update release branch to match main
         run: |
@@ -38,35 +36,14 @@ jobs:
           git branch -f release
           git push origin release --force
 
-      - name: Generate release notes
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          node .github/scripts/generate-release-notes.mjs
-
-      # - name: Delete and (re-)create release tag
-      #   env:
-      #     RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-      #   run: |
-      #     TAG="v$RELEASE_VERSION"
-      #     git push --delete origin "$TAG" 2>/dev/null || true
-      #     git tag -d "$TAG" 2>/dev/null || true
-      #     git tag "$TAG"
-      #     git push origin "$TAG"
-
-      # - name: Create GitHub release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     tag_name: v${{ github.event.inputs.release_version }}
-      #     body_path: RELEASE_NOTES.md
-
       - name: Create Release
         env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          DEBUG: semantic-release:*
         run: |
-          echo "Release version: $RELEASE_VERSION"
-          if [ -s RELEASE_NOTES.md ]; then
-            cat RELEASE_NOTES.md
+          npx semantic-release --extends ./.github/scripts/release-version.config.js --dry-run > semantic-release.log 2>&1 || true
+          if [ -s semantic-release.log ]; then
+            cat semantic-release.log
+          else
+            echo "No new release version."
           fi
