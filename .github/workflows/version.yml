@@ -42,6 +42,7 @@ jobs:
         env:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           node .github/scripts/generate-release-notes.mjs
 
