@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -36,22 +38,28 @@ jobs:
           git branch -f release
           git push origin release --force
 
-      - name: Delete and (re-)create release tag
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
-        run: |
-          TAG="v$RELEASE_VERSION"
-          git push --delete origin "$TAG" 2>/dev/null || true
-          git tag -d "$TAG" 2>/dev/null || true
-          git tag "$TAG"
-          git push origin "$TAG"
-
       - name: Generate release notes
         env:
           RELEASE_VERSION: ${{ github.event.inputs.release_version }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          node .github/scripts/generate-release-notes.js
+          node .github/scripts/generate-release-notes.mjs
+
+      # - name: Delete and (re-)create release tag
+      #   env:
+      #     RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+      #   run: |
+      #     TAG="v$RELEASE_VERSION"
+      #     git push --delete origin "$TAG" 2>/dev/null || true
+      #     git tag -d "$TAG" 2>/dev/null || true
+      #     git tag "$TAG"
+      #     git push origin "$TAG"
+
+      # - name: Create GitHub release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     tag_name: v${{ github.event.inputs.release_version }}
+      #     body_path: RELEASE_NOTES.md
 
       - name: Create Release
         env:

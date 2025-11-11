@@ -11,7 +11,7 @@ if (!newVersion) {
 
 const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
 
-// Find latest tag before the new one
+// Find latest tag (previous release)
 let prevTag = "";
 try {
   prevTag = execSync("git describe --tags --abbrev=0 HEAD^").toString().trim();
@@ -24,7 +24,6 @@ const compareUrl = prevTag
   ? `https://github.com/${owner}/${repo}/compare/${prevTag}...${newTag}`
   : null;
 
-// preset is an object here!
 let notes = "";
 const changelogStream = conventionalChangelogCore(
   {
@@ -43,7 +42,6 @@ for await (const chunk of changelogStream) {
   notes += chunk.toString();
 }
 
-// Insert Compare link if relevant
 if (compareUrl) {
   notes += `\n\n[Compare changes](${compareUrl})\n`;
 }
