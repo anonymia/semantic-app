@@ -1,0 +1,51 @@
+name: Build & Publish Release Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version (e.g. 1.2.3)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release
+        run: |
+          npm install --no-save semantic-release @semantic-release/release-notes-generator @semantic-release/exec conventional-changelog-conventionalcommits
+
+      - name: Force update release branch to match main
+        run: |
+          git fetch origin
+          git checkout main
+          git pull origin main
+          git branch -f release
+          git push origin release --force
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
+        run: |
+          echo "Release version: $RELEASE_VERSION"
+          npx semantic-release --branches main --extends ./.github/scripts/release-version.config.js
+          if [ -s version.txt ]; then
+            VERSION=$(cat version.txt)
+            make build VERSION=$VERSION && make package
+          else
+            echo "No new release version."
+          fi
