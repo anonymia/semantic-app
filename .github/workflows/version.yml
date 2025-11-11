@@ -70,6 +70,11 @@ jobs:
           [ -s release-notes.md ] && cat release-notes.md || echo '' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Print debug
+        run: |
+          echo "Release version: ${{ steps.semantic-release.outputs.version }}"
+          echo "Release notes: ${{ steps.semantic-release.outputs.release-notes }}"
+
       - name: Build binary
         run: |
           make build VERSION=${{ steps.semantic-release.outputs.version }} && make package
@@ -77,8 +82,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.semantic-release.outputs.version }}
-          name: ${{ steps.semantic-release.outputs.version }}
+          tag_name: v${{ steps.semantic-release.outputs.version }}
           body: ${{ steps.semantic-release.outputs.release-notes }}
           files: build/*.tar.gz
         env:
