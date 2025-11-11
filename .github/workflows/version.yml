@@ -28,7 +28,7 @@ jobs:
 
       - name: Install conventional-changelog
         run: |
-          npm install --no-save conventional-changelog-core conventional-changelog-conventionalcommits
+          npm install --no-save conventional-changelog conventional-changelog-core conventional-changelog-conventionalcommits
 
       - name: Force update release branch to match main
         run: |
@@ -64,7 +64,7 @@ jobs:
 
       - name: Create Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          RELEASE_VERSION: ${{ github.event.inputs.release_version }}
         run: |
           echo "Release version: $RELEASE_VERSION"
           if [ -s RELEASE_NOTES.md ]; then

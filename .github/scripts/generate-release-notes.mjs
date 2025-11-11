@@ -45,6 +45,8 @@ try {
 
 console.log(`Previous tag: ${prevTag ? prevTag : ""}`);
 console.log(`New tag: ${newTag}`);
+console.log(execSync(`git log --oneline ${prevTag}..${newTag}`).toString());
+console.log(execSync(`npx conventional-changelog -p conventionalcommits --from=${prevTag} --to=${newTag} --first-parent`).toString());
 
 // Generate release notes with conventional-changelog-core
 let notes = "";
