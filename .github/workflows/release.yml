@@ -50,7 +50,7 @@ jobs:
 
       - name: Build binary
         run: |
-          make build VERSION=${{ steps.semantic-release.outputs.version }} && make package
+          make build VERSION=${{ steps.semantic-release.outputs.version }} && make package VERSION=${{ steps.semantic-release.outputs.version }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
