@@ -30,6 +30,7 @@ jobs:
           git pull origin main
           git branch -f release
           git push origin release --force
+          git checkout release
 
       - name: Create Release
         env:
