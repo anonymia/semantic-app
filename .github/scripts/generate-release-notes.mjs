@@ -27,26 +27,27 @@ try {
 const newTag = `v${newVersion}`;
 
 // Create new tag at HEAD and overwrite remote if exists
-try {
-  execSync(`git tag -d ${newTag}`, { stdio: "ignore" });
-} catch {}
-execSync(`git tag ${newTag}`);
+// try {
+//   execSync(`git tag -d ${newTag}`, { stdio: "ignore" });
+// } catch {}
+// execSync(`git tag ${newTag}`);
 
-try {
-  const remoteTags = execSync("git ls-remote --tags origin").toString();
-  if (remoteTags.includes(`refs/tags/${newTag}`)) {
-    execSync(`git push --delete origin ${newTag}`);
-  }
-  execSync(`git push origin ${newTag}`);
-} catch (e) {
-  console.error(`Failed to push tag ${newTag}:`, e);
-  process.exit(1);
-}
+// try {
+//   const remoteTags = execSync("git ls-remote --tags origin").toString();
+//   if (remoteTags.includes(`refs/tags/${newTag}`)) {
+//     execSync(`git push --delete origin ${newTag}`);
+//   }
+//   execSync(`git push origin ${newTag}`);
+// } catch (e) {
+//   console.error(`Failed to push tag ${newTag}:`, e);
+//   process.exit(1);
+// }
 
 console.log(`Previous tag: ${prevTag ? prevTag : ""}`);
 console.log(`New tag: ${newTag}`);
-console.log(execSync(`git log --oneline ${prevTag}..${newTag}`).toString());
-console.log(execSync(`npx conventional-changelog -p conventionalcommits --from=${prevTag} --to=${newTag} --first-parent`).toString());
+// console.log(execSync(`git log --oneline ${prevTag}..${newTag}`).toString());
+// console.log(execSync(`npx conventional-changelog -p conventionalcommits --from=${prevTag} --to=${newTag} --first-parent`).toString());
+console.log(execSync(`npx conventional-changelog -p conventionalcommits --from=${prevTag}`).toString());
 
 // Generate release notes with conventional-changelog-core
 let notes = "";
@@ -58,7 +59,7 @@ const changelogStream = conventionalChangelogCore(
   },
   {
     version: newVersion,
-    currentTag: newTag,
+    // currentTag: newTag,
     previousTag: prevTag || undefined,
   }
 );
