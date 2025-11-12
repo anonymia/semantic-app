@@ -2,6 +2,18 @@ name: Build & Publish Release
 
 on:
   workflow_dispatch:
+    inputs:
+      prerelease-branch:
+        description: 'Pre-release branch (e.g., main, develop)'
+        required: true
+        default: 'main'
+      release-branch:
+        description: 'Release branch (e.g., release, stable)'
+        required: true
+        default: 'release'
+
+concurrency:
+  group: ${{ github.repository }}
 
 permissions:
   contents: write
@@ -23,21 +35,22 @@ jobs:
         run: |
           npm install --no-save semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator @semantic-release/exec @semantic-release/github conventional-changelog-conventionalcommits
 
-      - name: Force update release branch to match main
+      - name: Force update release branch to match pre-release branch
         run: |
           git fetch origin
-          git checkout main
-          git pull origin main
-          git branch -f release
-          git push origin release --force
+          git checkout ${{ github.event.inputs.prerelease-branch }}
+          git pull origin ${{ github.event.inputs.prerelease-branch }}
+          git branch -f ${{ github.event.inputs.release-branch }}
+          git push origin ${{ github.event.inputs.release-branch }} --force
 
-      - name: Create Release Notes
+      - name: Create release notes
         id: semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCH: ${{ github.event.inputs.release-branch }}
           DEBUG: semantic-release:*
         run: |
-          npx semantic-release --branches main --extends ./.github/scripts/release-main.config.js
+          npx semantic-release --branches ${{ github.event.inputs.prerelease-branch }} --extends ./.github/scripts/release-main.config.js
           echo "version=$([ -s version.txt ] && cat version.txt || echo '')" >> "$GITHUB_OUTPUT"
           echo "release-notes<<EOF" >> $GITHUB_OUTPUT
           { [ -s release-notes.md ] && cat release-notes.md || echo ''; } >> $GITHUB_OUTPUT
@@ -52,11 +65,11 @@ jobs:
         run: |
           make build VERSION=${{ steps.semantic-release.outputs.version }} && make package VERSION=${{ steps.semantic-release.outputs.version }}
 
-      - name: Create Release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.semantic-release.outputs.version }}
           body: ${{ steps.semantic-release.outputs.release-notes }}
           files: "*.tar.gz"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

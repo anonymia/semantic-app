@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+concurrency:
+  group: ${{ github.repository }}
+
 permissions:
   contents: write
 
@@ -26,7 +29,9 @@ jobs:
 
       - name: Create Tag
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRERELEASE_BRANCH: main
+          RELEASE_BRANCH: release
           DEBUG: semantic-release:*
         run: |
           npx semantic-release --extends ./.github/scripts/release-rc.config.js

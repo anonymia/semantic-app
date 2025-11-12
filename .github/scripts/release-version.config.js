@@ -1,11 +1,19 @@
+const releaseBranch = process.env.RELEASE_BRANCH || 'release';
+
 module.exports = {
-  branches: ['release'],
+  branches: [releaseBranch],
   plugins: [
     [
-      "@semantic-release/commit-analyzer"
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits"
+      }
     ],
     [
-      "@semantic-release/release-notes-generator"
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits"
+      }
     ]
   ],
   tagFormat: "v${version}"

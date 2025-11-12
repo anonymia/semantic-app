@@ -1,11 +1,17 @@
+const prereleaseBranch = process.env.PRERELEASE_BRANCH || 'main';
+const releaseBranch = process.env.RELEASE_BRANCH || 'release';
+
 module.exports = {
   branches: [
-    { name: 'main', prerelease: 'rc' },
-    'release'
+    { name: prereleaseBranch, prerelease: 'rc' },
+    releaseBranch
   ],
   plugins: [
     [
-      "@semantic-release/commit-analyzer"
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "conventionalcommits"
+      }
     ],
     // No publish/release plugins here!
   ],

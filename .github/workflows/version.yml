@@ -7,6 +7,17 @@ on:
         description: 'Release version (e.g. 1.2.3)'
         required: true
         type: string
+      prerelease-branch:
+        description: 'Pre-release branch (e.g., main, develop)'
+        required: true
+        default: 'main'
+      release-branch:
+        description: 'Release branch (e.g., release, stable)'
+        required: true
+        default: 'release'
+
+concurrency:
+  group: ${{ github.repository }}
 
 permissions:
   contents: write
@@ -28,21 +39,22 @@ jobs:
         run: |
           npm install --no-save semantic-release @semantic-release/commit-analyzer @semantic-release/release-notes-generator conventional-changelog-conventionalcommits
 
-      - name: Force update release branch to match main
+      - name: Force update release branch to match pre-release branch
         run: |
           git fetch origin
-          git checkout main
-          git pull origin main
-          git branch -f release
-          git push origin release --force
+          git checkout ${{ github.event.inputs.prerelease-branch }}
+          git pull origin ${{ github.event.inputs.prerelease-branch }}
+          git branch -f ${{ github.event.inputs.release-branch }}
+          git push origin ${{ github.event.inputs.release-branch }} --force
 
       - name: Create Release Notes
         id: semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCH: ${{ github.event.inputs.release-branch }}
           DEBUG: semantic-release:*
         run: |
-          npx semantic-release --branches main --extends ./.github/scripts/release-version.config.js --dry-run > semantic-release.log 2>&1 || true
+          npx semantic-release --branches ${{ github.event.inputs.prerelease-branch }} --extends ./.github/scripts/release-version.config.js --dry-run > semantic-release.log 2>&1 || true
           if [ -s semantic-release.log ]; then
             cat semantic-release.log
           else
@@ -91,4 +103,4 @@ jobs:
           body: ${{ steps.semantic-release.outputs.release-notes }}
           files: "*.tar.gz"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
